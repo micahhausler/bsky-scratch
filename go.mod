@@ -3,7 +3,7 @@ module github.com/micahhausler/bsky-scratch
 go 1.23.2
 
 require (
-	github.com/bluesky-social/indigo v0.0.0-20241122170530-feceb364ee49
+	github.com/bluesky-social/indigo v0.0.0-20241129200536-de950cc402b7
 	github.com/spf13/pflag v1.0.5
 	k8s.io/apimachinery v0.31.3
 	sigs.k8s.io/yaml v1.4.0

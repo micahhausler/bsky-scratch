@@ -4,8 +4,10 @@
 
 This repository contains code to curate a Bluesky list and starter pack.
 
+
+### List Manager
 ```
-Usage of ./bsky-scratch:
+Usage of ./listmanager:
       --debug                    Debug mode
       --ignoreFile string        File of ignored users (default "ignored-ids.json")
       --listName string          List name (default "Principals of Amazon")
@@ -14,6 +16,27 @@ Usage of ./bsky-scratch:
       --starterPackName string   Starter pack name (default "Principal Engineers of Amazon")
       --username string          Feed owner (default "micahhausler.com")
 ```
+
+### CLI
+```
+Usage of ./cli:
+      --debug             Debug mode
+      --name string       Name of resource
+      --owner string      resource owner
+      --password string   Your password
+      --username string   Your username
+Bluesky CLI:
+	Usage: bluesky-cli <verb> <resource> [flags]
+
+	Verbs:
+	- get - get resource
+
+	Resources:
+	- user          get user profile
+	- list          get lists. When a --name  is specified, it will get the list details
+	- starterpack   get starter packs. When a --name is specified, it will get the starter pack details
+```
+
 ## License
 
 [MIT Licensed](/LICENSE)
