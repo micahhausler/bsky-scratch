@@ -41,14 +41,31 @@ type IgnoreUser struct {
 }
 
 func main() {
-	username := flag.String("username", "micahhausler.com", "Feed owner")
-	password := flag.String("password", "", "Feed owner password")
+	username := flag.String("username", "", "Your username")
+	password := flag.String("password", "", "Your password")
 	listName := flag.String("listName", "Principals of Amazon", "List name")
 	starterPackName := flag.String("starterPackName", "Principal Engineers of Amazon", "Starter pack name")
 	searchTerms := flag.StringSlice("searchTerms", []string{"Principal Engineer Amazon", "Principal Engineer AWS"}, "Search term")
 	ignoreFile := flag.String("ignoreFile", "ignored-ids.json", "File of ignored users")
 	debug := flag.Bool("debug", false, "Debug mode")
 	flag.Parse()
+
+	if *username == "" {
+		un, ok := os.LookupEnv("BLUESKY_USERNAME")
+		if !ok {
+			fmt.Println("BLUESKY_USERNAME nor --username was set")
+			os.Exit(1)
+		}
+		username = &un
+	}
+	if *password == "" {
+		pw, ok := os.LookupEnv("BLUESKY_PASSWORD")
+		if !ok {
+			fmt.Println("BLUESKY_PASSWORD nor --password was set")
+			os.Exit(1)
+		}
+		password = &pw
+	}
 
 	ctx := context.Background()
 	dir := identity.DefaultDirectory()

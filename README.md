@@ -7,19 +7,19 @@ This repository contains code to curate a Bluesky list and starter pack.
 
 ### List Manager
 ```
-Usage of ./listmanager:
+Usage of ./list-manager:
       --debug                    Debug mode
       --ignoreFile string        File of ignored users (default "ignored-ids.json")
       --listName string          List name (default "Principals of Amazon")
-      --password string          Feed owner password
+      --password string          Your password
       --searchTerms strings      Search term (default [Principal Engineer Amazon,Principal Engineer AWS])
       --starterPackName string   Starter pack name (default "Principal Engineers of Amazon")
-      --username string          Feed owner (default "micahhausler.com")
+      --username string          Your username
 ```
 
 ### CLI
 ```
-Usage of ./cli:
+Usage of ./bsky-cli:
       --debug             Debug mode
       --name string       Name of resource
       --owner string      resource owner
