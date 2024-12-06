@@ -133,9 +133,9 @@ func main() {
 					if list.Name != *name {
 						continue
 					}
-					list, err := bsky.GraphGetList(ctx, xrpcc, ownerHandle.DID.String(), 100, list.Uri)
+					list, err := bsky.GraphGetList(ctx, xrpcc, ownerHandle.DID.String(), 150, list.Uri)
 					if err != nil {
-						log.Fatalf("Failed to get starter pack list: %v", err)
+						log.Fatalf("Failed to get list: %v", err)
 					}
 					dumpYaml(list)
 				}
@@ -173,6 +173,12 @@ func main() {
 					break
 				}
 				dumpYaml(foundPack)
+
+				list, err := bsky.GraphGetList(ctx, xrpcc, ownerHandle.DID.String(), 150, foundPack.List)
+				if err != nil {
+					log.Fatalf("Failed to get starter pack list: %v", err)
+				}
+				dumpYaml(list)
 				return
 			}
 			dumpYaml(packs)

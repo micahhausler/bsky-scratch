@@ -50,6 +50,8 @@ func main() {
 		"Principal Software Engineer Amazon",
 		"Principal Engineer AWS",
 		"Principal Software Engineer AWS",
+		"Distinguished Engineer Amazon",
+		"Distinguished Engineer AWS",
 	}, "Search term")
 	ignoreFile := flag.String("ignoreFile", "ignored-ids.json", "File of ignored users")
 	debug := flag.Bool("debug", false, "Debug mode")
@@ -107,7 +109,7 @@ func main() {
 		dumpYaml(pack)
 	}
 
-	starterPackList, err := appbsky.GraphGetList(ctx, xrpcc, handle.DID.String(), 100, pack.List)
+	starterPackList, err := appbsky.GraphGetList(ctx, xrpcc, handle.DID.String(), 150, pack.List)
 	if err != nil {
 		log.Fatalf("Failed to get starter pack list: %v", err)
 	}

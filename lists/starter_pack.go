@@ -54,7 +54,7 @@ func ListMembers(ctx context.Context, xrpcc *xrpc.Client, listName, ownerDid str
 		if listId.Name != listName {
 			continue
 		}
-		foundList, err = appbsky.GraphGetList(ctx, xrpcc, ownerDid, 100, listId.Uri)
+		foundList, err = appbsky.GraphGetList(ctx, xrpcc, ownerDid, 150, listId.Uri)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("Failed to get list: %v", err))
 
