@@ -45,7 +45,12 @@ func main() {
 	password := flag.String("password", "", "Your password")
 	listName := flag.String("listName", "Principals of Amazon", "List name")
 	starterPackName := flag.String("starterPackName", "Principal Engineers of Amazon", "Starter pack name")
-	searchTerms := flag.StringSlice("searchTerms", []string{"Principal Engineer Amazon", "Principal Engineer AWS"}, "Search term")
+	searchTerms := flag.StringSlice("searchTerms", []string{
+		"Principal Engineer Amazon",
+		"Principal Software Engineer Amazon",
+		"Principal Engineer AWS",
+		"Principal Software Engineer AWS",
+	}, "Search term")
 	ignoreFile := flag.String("ignoreFile", "ignored-ids.json", "File of ignored users")
 	debug := flag.Bool("debug", false, "Debug mode")
 	flag.Parse()
@@ -135,19 +140,29 @@ func main() {
 
 	// Find the difference between the two sets
 	onlyInMainList := mainListDidSet.Difference(starterPackDidSet)
-	if len(onlyInMainList) > 0 {
-		fmt.Println("Missing from Starter Pack:")
+	if len(onlyInMainList) > 0 && len(starterPackDids) < 150 {
+		fmt.Println("Missing from Starter Pack, adding:")
 		for did := range onlyInMainList {
 			fmt.Printf("%s\n", listDidMap[did])
+			err := AddUserToList(starterPackList, xrpcc, did, listDidMap[did])
+			if err != nil {
+				log.Fatalf("Failed to add user to list: %v", err)
+			}
 		}
+	} else if len(starterPackDids) == 150 {
+		fmt.Println("Starter pack is full, can't add any more users")
 	} else {
 		fmt.Printf("Starter pack includes all main list (%d members)\n", len(starterPackDidSet))
 	}
 	onlyInStarterPack := starterPackDidSet.Difference(mainListDidSet)
 	if len(onlyInStarterPack) > 0 {
-		fmt.Println("Missing from Main List:")
+		fmt.Println("Missing from Main List, adding:")
 		for did := range onlyInStarterPack {
 			fmt.Printf("%s\n", starterPackDidMap[did])
+			err := AddUserToList(mainList, xrpcc, did, listDidMap[did])
+			if err != nil {
+				log.Fatalf("Failed to add user to list: %v", err)
+			}
 		}
 	} else {
 		fmt.Printf("Main list includes all starter pack (%d members)\n", len(mainListDidSet))
@@ -236,6 +251,26 @@ func main() {
 
 }
 
+func AddUserToList(list *appbsky.GraphGetList_Output, xrpcc *xrpc.Client, userdid, handle string) error {
+	_, err := atproto.RepoCreateRecord(
+		context.Background(),
+		xrpcc,
+		&atproto.RepoCreateRecord_Input{
+			Record: &util.LexiconTypeDecoder{Val: &appbsky.GraphListitem{
+				CreatedAt: time.Now().UTC().Format(time.RFC3339),
+				List:      list.List.Uri,
+				Subject:   userdid,
+			}},
+			Collection: "app.bsky.graph.listitem",
+			Repo:       list.List.Creator.Did,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("Failed to add user: %v", err)
+	}
+	return nil
+}
+
 func HandleUser(list *appbsky.GraphGetList_Output, spList *appbsky.GraphGetList_Output, ignoredUsers IgnoredUsers, xrpcc *xrpc.Client, profileView *appbsky.ActorDefs_ProfileView) (*IgnoreUser, error) {
 	reader := bufio.NewReader(os.Stdin)
 	helpMessage := "Action: Add to list (a), Add to ignore file (i), Skip (s), Quit (q)"
@@ -251,41 +286,20 @@ func HandleUser(list *appbsky.GraphGetList_Output, spList *appbsky.GraphGetList_
 			return nil, errors.New("User quit")
 		case "a":
 			fmt.Printf("Adding %s to list & starter pack\n", profileView.Handle)
-			_, err := atproto.RepoCreateRecord(
-				context.Background(),
-				xrpcc,
-				&atproto.RepoCreateRecord_Input{
-					Record: &util.LexiconTypeDecoder{Val: &appbsky.GraphListitem{
-						CreatedAt: time.Now().UTC().Format(time.RFC3339),
-						List:      list.List.Uri,
-						Subject:   *&profileView.Did,
-					}},
-					Collection: "app.bsky.graph.listitem", // TODO what is the NSID?
-					Repo:       list.List.Creator.Did,
-				},
-			)
+
+			err := AddUserToList(list, xrpcc, profileView.Did, profileView.Handle)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to add user: %v", err)
 			}
 			fmt.Printf("Successfully added %s to list\n", profileView.Handle)
 
-			_, err = atproto.RepoCreateRecord(
-				context.Background(),
-				xrpcc,
-				&atproto.RepoCreateRecord_Input{
-					Record: &util.LexiconTypeDecoder{Val: &appbsky.GraphListitem{
-						CreatedAt: time.Now().UTC().Format(time.RFC3339),
-						List:      spList.List.Uri,
-						Subject:   *&profileView.Did,
-					}},
-					Collection: "app.bsky.graph.listitem",
-					Repo:       spList.List.Creator.Did,
-				},
-			)
-			if err != nil {
-				return nil, fmt.Errorf("Failed to add user to starter pack: %v", err)
+			if *spList.List.ListItemCount < 150 {
+				err = AddUserToList(spList, xrpcc, profileView.Did, profileView.Handle)
+				if err != nil {
+					return nil, fmt.Errorf("Failed to add user to starter pack: %v", err)
+				}
+				fmt.Printf("Successfully added %s to starter pack\n", profileView.Handle)
 			}
-			fmt.Printf("Successfully added %s to starter pack\n", profileView.Handle)
 			return nil, nil
 		case "i":
 			fmt.Printf("Adding %s to ignore file\n", profileView.Handle)
